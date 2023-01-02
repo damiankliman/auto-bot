@@ -11,4 +11,3 @@ def handle_response(message):
   
   if p_message == '!help':
     return "`This is a help message`"
-  
