@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import bot
+from core import bot
 
 load_dotenv()
 
