@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 python-dotenv = "*"
 discord = "*"
+alembic = "*"
+sqlalchemy = "*"
+psycopg2 = "*"
 
 [dev-packages]
 jurigged = "*"
