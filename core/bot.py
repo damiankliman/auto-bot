@@ -1,17 +1,7 @@
 import os
 import discord
 from core import responses
-from core import models
-from core.database import engine, SessionLocal
-
-models.Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from core.database import get_db
 
 async def send_message(message, user_message, is_private):
   try:
