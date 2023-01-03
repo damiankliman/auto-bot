@@ -1,12 +1,14 @@
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.models import User
+import os
 
 def get_user_by_id(discord_id: int, db: Session = next(get_db())):
     return db.query(User).filter(User.discord_id == discord_id).one_or_none()
 
 def create_user(discord_id: int, username: str, db: Session = next(get_db())):
-    user = User(discord_id=discord_id, username=username)
+    default_money = int(os.getenv('DEFAULT_USER_MONEY')) or 1000
+    user = User(discord_id=discord_id, username=username, money=default_money)
     db.add(user)
     db.commit()
     db.refresh(user)
