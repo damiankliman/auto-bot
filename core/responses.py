@@ -1,6 +1,6 @@
 import random
 
-def handle_response(message):
+def handle_response(message: str, local_user):
     p_message = message.lower()
 
     if p_message == 'hello':
