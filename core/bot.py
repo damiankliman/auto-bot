@@ -4,14 +4,13 @@ from core import responses
 from core.database import get_db
 from core import services
 
-async def send_message(message, user_message, is_private):
+async def send_message(message, response: str, is_private: bool):
     try:
-        response = responses.handle_response(user_message)
-
         if not response:
             raise Exception("Command not found")
 
         await message.author.send(response) if is_private else await message.channel.send(response)
+
     except Exception as e:
         print(e)
 
@@ -33,16 +32,21 @@ def run_discord_bot():
 
         username = str(message.author)
         user_id = str(message.author.id)
-        user_message = str(message.content)[1:]
+        message_content = str(message.content)[1:]
         channel = str(message.channel)
         local_user = services.get_or_create_local_user(message.author)
+        is_private = False
 
-        print(f"{username} with id:{user_id} in {channel}: {user_message}")
+        print(f"{username} with id:{user_id} in {channel}: {message_content}")
         print(f"Local user: {local_user.username} with id: {local_user.id} with discord_id: {local_user.discord_id}")
 
-        if user_message.startswith('!'):
-            user_message = user_message[1:]
-            await send_message(message, user_message, is_private=True)
-        else: await send_message(message, user_message, is_private=False)
+        if message_content.startswith('!'):
+            is_private = True
+            message_content = message_content[1:]
+
+        response = responses.handle_response(message_content, local_user)
+
+        await send_message(message, response, is_private)
+
 
     client.run(TOKEN)
