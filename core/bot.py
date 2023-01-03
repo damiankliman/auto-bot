@@ -2,6 +2,7 @@ import os
 import discord
 from core import responses
 from core.database import get_db
+from core import services
 
 async def send_message(message, user_message, is_private):
   try:
@@ -34,6 +35,7 @@ def run_discord_bot():
     user_id = str(message.author.id)
     user_message = str(message.content)[1:]
     channel = str(message.channel)
+    local_user = services.get_or_create_local_user(message.author)
 
     print(f"{username} with id:{user_id} in {channel}: {user_message}")
 
