@@ -1,6 +1,7 @@
 import os
 import discord
 from core import responses
+from core.database import get_db
 
 async def send_message(message, user_message, is_private):
   try:

@@ -1,14 +1,14 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date
-
-Base = declarative_base()
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql import text
+from core.database import Base
+import uuid
 
 class User(Base):
   __tablename__ = 'user'
-  id = Column(Integer, primary_key=True)
-  discord_id = Column(String)
-  username = Column(String)
+  id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+  discord_id = Column(String, nullable=False)
+  username = Column(String, nullable=False)
+  created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
-  def __repr__(self):
-    return "<User(discord_id='{}', username='{}')>"\
-        .format(self.discord_id, self.username)

@@ -1,4 +1,11 @@
+from sqlalchemy.orm import Session
+from core.database import get_db
+from core.models import User
 import random
+
+def get_all_users(db: Session = next(get_db())):
+  users = db.query(User).first()
+  return users
 
 def handle_response(message):
   p_message = message.lower()
@@ -21,3 +28,6 @@ def handle_response(message):
 
   if p_message == 'help':
     return "`This is a help message`"
+
+  if p_message == 'users':
+   return get_all_users().__dict__
