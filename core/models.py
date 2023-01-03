@@ -12,6 +12,3 @@ class User(Base):
   username = Column(String, nullable=False)
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
-  def __repr__(self):
-    return "<User(discord_id='{}', username='{}')>"\
-        .format(self.discord_id, self.username)
