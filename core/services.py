@@ -25,3 +25,7 @@ def get_or_create_local_user(author):
         user = create_user(author.id, author.name)
 
     return user
+
+def get_user_money_by_id(user_id, db: Session = next(get_db())):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+    return user.money
