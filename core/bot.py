@@ -38,6 +38,7 @@ def run_discord_bot():
         local_user = services.get_or_create_local_user(message.author)
 
         print(f"{username} with id:{user_id} in {channel}: {user_message}")
+        print(f"Local user: {local_user.username} with id: {local_user.id} with discord_id: {local_user.discord_id}")
 
         if user_message.startswith('!'):
             user_message = user_message[1:]
