@@ -11,3 +11,4 @@ class User(Base):
     discord_id = Column(BigInteger, nullable=False)
     username = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    money = Column(BigInteger, nullable=True)
