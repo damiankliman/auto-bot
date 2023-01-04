@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from core.database import get_db
-from core.models import User
+from core.models import User, Car
 import os
 
 def get_user_by_id(discord_id: int, db: Session = next(get_db())):
@@ -29,3 +29,6 @@ def get_or_create_local_user(author):
 def get_user_money_by_id(user_id, db: Session = next(get_db())):
     user = db.query(User).filter(User.id == user_id).one_or_none()
     return user.money
+
+def get_all_cars(db: Session = next(get_db())):
+    return db.query(Car).all()

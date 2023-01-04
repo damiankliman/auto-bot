@@ -9,6 +9,7 @@ discord = "*"
 alembic = "*"
 sqlalchemy = "*"
 psycopg2 = "*"
+table2ascii = "*"
 
 [dev-packages]
 jurigged = "*"
