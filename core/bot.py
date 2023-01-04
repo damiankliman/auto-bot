@@ -7,7 +7,8 @@ from core import services
 
 def run_discord_bot():
     TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-    bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
+    COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '/'
+    bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all())
 
     @bot.event
     async def on_ready():
