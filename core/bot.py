@@ -2,7 +2,6 @@ import os
 import discord
 from discord.ext import commands
 from core.commands import handle_commands
-from core.database import get_db
 from core import services
 
 def run_discord_bot():
