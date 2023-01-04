@@ -14,7 +14,7 @@ def handle_commands(bot):
     @bot.command()
     async def bank(ctx):
         money = services.get_user_money_by_id(ctx.local_user.id)
-        await ctx.send(f"You have ${money:n} in your bank account")
+        await ctx.send(f"You have ${money:,} in your bank account")
 
     # /roll || Roll a random number between 1 and 99 (or a custom number)
     @bot.command()
