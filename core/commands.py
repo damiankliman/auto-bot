@@ -46,5 +46,6 @@ Here's a list of commands you can use:
 /help - Get a list of commands
 /hello - Say hi!
 /bank - Check your bank account
+/dealer - See all available cars for purchase
 /roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
 ```""")
