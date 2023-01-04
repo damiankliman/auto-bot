@@ -7,7 +7,7 @@ from core import services
 def run_discord_bot():
     TOKEN = os.getenv('DISCORD_BOT_TOKEN')
     COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '/'
-    bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all())
+    bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), help_command=None)
 
     @bot.event
     async def on_ready():
@@ -15,7 +15,10 @@ def run_discord_bot():
 
     @bot.before_invoke
     async def before_invoke(ctx):
-        ctx.local_user = services.get_or_create_local_user(ctx.author)
+        local_user = services.get_or_create_local_user(ctx.author)
+        ctx.local_user = local_user
+
+        print(f"{local_user.username} with id: {local_user.id} is running command: {ctx.command}")
 
     handle_commands(bot)
 

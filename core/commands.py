@@ -21,3 +21,16 @@ def handle_commands(bot):
             return await ctx.send("Please enter a valid number larger than 0")
 
         await ctx.send(str(random.randint(1, max)))
+
+    # /help || Get a list of all commands
+    @bot.command()
+    async def help(ctx):
+        await ctx.send(
+"""
+Here's a list of commands you can use:
+```
+/help - Get a list of commands
+/hello - Say hi!
+/bank - Check your bank account
+/roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
+```""")
