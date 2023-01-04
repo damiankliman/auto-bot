@@ -29,4 +29,10 @@ def handle_response(message: str, local_user):
 
     # /help || Get a list of commands
     if command == 'help':
-        return "`This is a help message`"
+        return """
+Here's a list of commands:
+```/help - Get a list of commands
+/hello - Say hi!
+/bank - Check your bank account
+/roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
+```"""
