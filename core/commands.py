@@ -1,5 +1,6 @@
 import random
 from core import services
+from core.models import CarType
 from table2ascii import table2ascii as t2a, PresetStyle
 
 def handle_commands(bot):
@@ -28,9 +29,10 @@ def handle_commands(bot):
     async def dealer(ctx):
         dealer_cars = services.get_all_cars()
         cars_table_output = t2a(
-            header=["Year", "Make", "Model", "Trim", "Type", "Price"],
-            body=[[car.year, car.make, car.model, car.trim, car.type, car.price] for car in dealer_cars],
-            style=PresetStyle.thin_compact
+            header=["Year", "Make", "Model", "Trim", "Type", "Price", "Order code"],
+            body=[[car.year, car.make, car.model, car.trim, CarType[car.type.name].value, f"${car.price:,}", car.order_code] for car in dealer_cars],
+            style=PresetStyle.thin_compact,
+            last_col_heading=True
         )
         await ctx.send(f"Here's a list of cars you can buy: \n```{cars_table_output}```")
 
