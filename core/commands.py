@@ -39,6 +39,7 @@ def handle_commands(bot):
     @bot.command()
     async def dealer(ctx):
         dealer_cars = services.get_all_cars()
+        dealer_cars.sort(key=lambda car: car.price)
         cars_table_output = t2a(
             header=["Year", "Make", "Model", "Trim", "Type", "Price", "Order code"],
             body=[[car.year, car.make, car.model, car.trim, CarType[car.type.name].value, f"${car.price:,}", car.order_code] for car in dealer_cars],
