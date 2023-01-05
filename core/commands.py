@@ -46,10 +46,13 @@ def handle_commands(bot):
             style=PresetStyle.thin_compact,
             last_col_heading=True
         )
-        await ctx.send(f"Here's a list of cars you can buy: \n```{cars_table_output}```")
+        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the !buy <order code> command to buy a car```")
 
     @bot.command()
-    async def buy(ctx, order_code: str):
+    async def buy(ctx, order_code: str = None):
+        if not order_code:
+            return await ctx.send("Please provide an order code, like this: **!buy E30A**")
+
         dealer_car = services.get_car_by_order_code(order_code)
 
         if not dealer_car:
