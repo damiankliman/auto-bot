@@ -41,8 +41,8 @@ def handle_commands(bot):
         dealer_cars = services.get_all_cars()
         dealer_cars.sort(key=lambda car: car.price)
         cars_table_output = t2a(
-            header=["Year", "Make", "Model", "Trim", "Type", "Price", "Order code"],
-            body=[[car.year, car.make, car.model, car.trim, CarType[car.type.name].value, f"${car.price:,}", car.order_code] for car in dealer_cars],
+            header=["Year", "Make", "Model", "Trim", "Type", "Power", "Weight", "Price", "Order code"],
+            body=[[car.year, car.make, car.model, car.trim, car.type.value, f"{car.horsepower:,} HP", f"{car.weight:,} lb", f"${car.price:,}", car.order_code] for car in dealer_cars],
             style=PresetStyle.thin_compact,
             last_col_heading=True
         )
@@ -67,6 +67,17 @@ def handle_commands(bot):
 
         services.buy_car(ctx.local_user.id, dealer_car.id)
         await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
+
+    @bot.command()
+    async def garage(ctx):
+        user_cars = ctx.local_user.cars
+        cars_table_output = t2a(
+            header=["Year", "Make", "Model", "Trim", "Type", "Power"],
+            body=[[car.year, car.make, car.model, car.trim, car.type.value, f"{car.horsepower:,} HP"] for car in user_cars],
+            style=PresetStyle.thin_compact,
+            last_col_heading=True
+        )
+        await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
 
     # /help || Get a list of all commands
     @bot.command()
