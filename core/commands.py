@@ -1,3 +1,4 @@
+import os
 import random
 import discord
 from core import services
@@ -6,6 +7,7 @@ from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
 
 def handle_commands(bot):
+    COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
 
     # /hello || Greet the user
     @bot.command()
@@ -46,12 +48,12 @@ def handle_commands(bot):
             style=PresetStyle.thin_compact,
             last_col_heading=True
         )
-        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the !buy <order code> command to buy a car```")
+        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
 
     @bot.command()
     async def buy(ctx, order_code: str = None):
         if not order_code:
-            return await ctx.send("Please provide an order code, like this: **!buy E30A**")
+            return await ctx.send(f"Please provide an order code, like this: **{COMMAND_PREFIX}buy E30A**")
 
         dealer_car = services.get_car_by_order_code(order_code)
 
@@ -86,12 +88,14 @@ def handle_commands(bot):
     @bot.command()
     async def help(ctx):
         await ctx.send(
-"""
+f"""
 Here's a list of commands you can use:
 ```
-/help - Get a list of commands
-/hello - Say hi!
-/bank - Check your bank account
-/dealer - See all available cars for purchase
-/roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
+{COMMAND_PREFIX}help - Get a list of commands
+{COMMAND_PREFIX}hello - Say hi!
+{COMMAND_PREFIX}bank - Check your bank account
+{COMMAND_PREFIX}dealer - See all available cars for purchase
+{COMMAND_PREFIX}buy <order code> - Buy a car from the dealer
+{COMMAND_PREFIX}garage - See all cars in your garage
+{COMMAND_PREFIX}roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
 ```""")
