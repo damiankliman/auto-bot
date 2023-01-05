@@ -14,6 +14,7 @@ def create_user(discord_id: int, username: str, db: Session = next(get_db())):
     db.add(user)
     db.commit()
     db.refresh(user)
+    db.close()
     return user
 
 def get_or_create_local_user(author):
@@ -30,27 +31,22 @@ def get_or_create_local_user(author):
 
 def get_user_money_by_id(user_id, db: Session = next(get_db())):
     user = db.query(User).filter(User.id == user_id).one_or_none()
+    db.close()
     return user.money
 
 def get_all_cars(db: Session = next(get_db())):
-    return db.query(Car).all()
+    cars = db.query(Car).all()
+    db.close()
+    return cars
 
 def get_car_by_order_code(order_code: str, db: Session = next(get_db())):
-    return db.query(Car).filter(Car.order_code == order_code).one_or_none()
+    car = db.query(Car).filter(Car.order_code == order_code).one_or_none()
+    db.close()
+    return car
 
 def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     user = db.query(User).filter(User.id == user_id).one_or_none()
     car = db.query(Car).filter(Car.id == car_id).one_or_none()
-
-    if user.money < car.price:
-        return False
-
-    if car in user.cars:
-        return False
-
-    if len(user.cars) >= 4:
-        return False
-
     user.money -= car.price
     user.cars.append(car)
     db.commit()
