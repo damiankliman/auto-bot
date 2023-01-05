@@ -1,7 +1,9 @@
 import random
+import discord
 from core import services
 from core.models import CarType
 from table2ascii import table2ascii as t2a, PresetStyle
+from datetime import datetime
 
 def handle_commands(bot):
 
@@ -14,7 +16,16 @@ def handle_commands(bot):
     @bot.command()
     async def bank(ctx):
         money = services.get_user_money_by_id(ctx.local_user.id)
-        await ctx.send(f"You have ${money:,} in your bank account")
+        embed=discord.Embed(
+            title=ctx.local_user.username,
+            description=datetime.today().strftime('%d/%m/%Y'),
+            color=0x2ca3ed
+        )
+        embed.set_author(name="Bank statement")
+        embed.add_field(name="Chequing:", value=f"${money:,}", inline=True)
+        embed.add_field(name="Savings", value="$0", inline=True)
+        embed.set_footer(text="Please do not retain this for your records")
+        await ctx.send(embed=embed)
 
     # /roll || Roll a random number between 1 and 99 (or a custom number)
     @bot.command()
