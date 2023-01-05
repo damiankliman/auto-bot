@@ -59,7 +59,7 @@ def upgrade() -> None:
                 "horsepower": 111,
                 "weight": 2348,
                 "price": 3000,
-                "order_code": "E36A",
+                "order_code": "E30A",
             },
             {
                 "id": "680d3025-a530-45c4-9189-a503bac8c5f7",
