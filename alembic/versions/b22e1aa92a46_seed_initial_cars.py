@@ -87,7 +87,7 @@ def upgrade() -> None:
             },
             {
                 "id": "279042cd-e679-4dae-bd80-f0478ecbcc7f",
-                "year": 1993,
+                "year": 2000,
                 "make": "Nissan",
                 "model": "Silvia",
                 "trim": "Spec R",
