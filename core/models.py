@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, BigInteger, Integer, Enum
+from sqlalchemy import Column, String, BigInteger, Integer, Enum, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql import text
@@ -13,6 +14,7 @@ class User(Base):
     username = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     money = Column(BigInteger, nullable=True)
+    cars = relationship('Car', secondary='user_car', back_populates='user')
 
 class CarType(enum.Enum):
     HATCHBACK = 'Hatchback'
@@ -41,3 +43,10 @@ class Car(Base):
     weight = Column(Integer, nullable=False)
     price = Column(Integer, nullable=False)
     order_code = Column(String, unique=True, nullable=False)
+    users = relationship('User', secondary='user_car', back_populates='car')
+
+class UserCar(Base):
+    __tablename__ = 'user_car'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('user.id'))
+    car_id = Column(UUID(as_uuid=True), ForeignKey('car.id'))
