@@ -14,7 +14,7 @@ class User(Base):
     username = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     money = Column(BigInteger, nullable=True)
-    cars = relationship('Car', secondary='user_car', back_populates='users')
+    cars = relationship('Car', secondary='user_car', back_populates='users', lazy='joined')
 
 class CarType(enum.Enum):
     HATCHBACK = 'Hatchback'

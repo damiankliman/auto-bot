@@ -4,7 +4,9 @@ from core.models import User, Car
 import os
 
 def get_user_by_id(discord_id: int, db: Session = next(get_db())):
-    return db.query(User).filter(User.discord_id == discord_id).one_or_none()
+    user = db.query(User).filter(User.discord_id == discord_id).one_or_none()
+    db.close()
+    return user
 
 def create_user(discord_id: int, username: str, db: Session = next(get_db())):
     default_money = int(os.getenv('DEFAULT_USER_MONEY')) or 1000
@@ -52,5 +54,4 @@ def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     user.money -= car.price
     user.cars.append(car)
     db.commit()
-    db.refresh(user)
     return True
