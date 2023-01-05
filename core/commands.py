@@ -47,6 +47,24 @@ def handle_commands(bot):
         )
         await ctx.send(f"Here's a list of cars you can buy: \n```{cars_table_output}```")
 
+    @bot.command()
+    async def buy(ctx, order_code: str):
+        car = services.get_car_by_order_code(order_code)
+        if not car:
+            return await ctx.send("That car does not exist!")
+
+        if car in ctx.local_user.cars:
+                return await ctx.send("You already own this car!")
+
+        if len(ctx.local_user.cars) >= 4:
+                return await ctx.send("Your garage is already full! (max 4 cars)")
+
+        if ctx.local_user.money < car.price:
+            return await ctx.send("You do not have enough money to buy this car!")
+
+        services.buy_car(ctx.local_user.id, car.id)
+        await ctx.send(f"You bought a {car.year} {car.make} {car.model} {car.trim} for ${car.price:,}!")
+
     # /help || Get a list of all commands
     @bot.command()
     async def help(ctx):

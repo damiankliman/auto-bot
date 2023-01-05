@@ -14,7 +14,7 @@ class User(Base):
     username = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     money = Column(BigInteger, nullable=True)
-    cars = relationship('Car', secondary='user_car', back_populates='user')
+    cars = relationship('Car', secondary='user_car', back_populates='users')
 
 class CarType(enum.Enum):
     HATCHBACK = 'Hatchback'
@@ -43,7 +43,7 @@ class Car(Base):
     weight = Column(Integer, nullable=False)
     price = Column(Integer, nullable=False)
     order_code = Column(String, unique=True, nullable=False)
-    users = relationship('User', secondary='user_car', back_populates='car')
+    users = relationship('User', secondary='user_car', back_populates='cars')
 
 class UserCar(Base):
     __tablename__ = 'user_car'

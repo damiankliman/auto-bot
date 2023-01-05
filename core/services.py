@@ -32,3 +32,25 @@ def get_user_money_by_id(user_id, db: Session = next(get_db())):
 
 def get_all_cars(db: Session = next(get_db())):
     return db.query(Car).all()
+
+def get_car_by_order_code(order_code: str, db: Session = next(get_db())):
+    return db.query(Car).filter(Car.order_code == order_code).one_or_none()
+
+def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+    car = db.query(Car).filter(Car.id == car_id).one_or_none()
+
+    if user.money < car.price:
+        return False
+
+    if car in user.cars:
+        return False
+
+    if len(user.cars) >= 4:
+        return False
+
+    user.money -= car.price
+    user.cars.append(car)
+    db.commit()
+    db.refresh(user)
+    return True
