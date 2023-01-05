@@ -4,7 +4,9 @@ from core.models import User, Car
 import os
 
 def get_user_by_id(discord_id: int, db: Session = next(get_db())):
-    return db.query(User).filter(User.discord_id == discord_id).one_or_none()
+    user = db.query(User).filter(User.discord_id == discord_id).one_or_none()
+    db.close()
+    return user
 
 def create_user(discord_id: int, username: str, db: Session = next(get_db())):
     default_money = int(os.getenv('DEFAULT_USER_MONEY')) or 1000
@@ -12,6 +14,7 @@ def create_user(discord_id: int, username: str, db: Session = next(get_db())):
     db.add(user)
     db.commit()
     db.refresh(user)
+    db.close()
     return user
 
 def get_or_create_local_user(author):
@@ -28,7 +31,23 @@ def get_or_create_local_user(author):
 
 def get_user_money_by_id(user_id, db: Session = next(get_db())):
     user = db.query(User).filter(User.id == user_id).one_or_none()
+    db.close()
     return user.money
 
 def get_all_cars(db: Session = next(get_db())):
-    return db.query(Car).all()
+    cars = db.query(Car).all()
+    db.close()
+    return cars
+
+def get_car_by_order_code(order_code: str, db: Session = next(get_db())):
+    car = db.query(Car).filter(Car.order_code == order_code).one_or_none()
+    db.close()
+    return car
+
+def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+    car = db.query(Car).filter(Car.id == car_id).one_or_none()
+    user.money -= car.price
+    user.cars.append(car)
+    db.commit()
+    return True

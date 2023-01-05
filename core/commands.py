@@ -1,11 +1,13 @@
+import os
 import random
 import discord
 from core import services
-from core.models import CarType
+from core.models import CarType, Car
 from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
 
 def handle_commands(bot):
+    COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
 
     # /hello || Greet the user
     @bot.command()
@@ -39,24 +41,61 @@ def handle_commands(bot):
     @bot.command()
     async def dealer(ctx):
         dealer_cars = services.get_all_cars()
+        dealer_cars.sort(key=lambda car: car.price)
         cars_table_output = t2a(
-            header=["Year", "Make", "Model", "Trim", "Type", "Price", "Order code"],
-            body=[[car.year, car.make, car.model, car.trim, CarType[car.type.name].value, f"${car.price:,}", car.order_code] for car in dealer_cars],
+            header=["Year", "Make", "Model", "Trim", "Type", "Power", "Weight", "Price", "Order code"],
+            body=[[car.year, car.make, car.model, car.trim, car.type.value, f"{car.horsepower:,} HP", f"{car.weight:,} lb", f"${car.price:,}", car.order_code] for car in dealer_cars],
             style=PresetStyle.thin_compact,
             last_col_heading=True
         )
-        await ctx.send(f"Here's a list of cars you can buy: \n```{cars_table_output}```")
+        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
+
+    @bot.command()
+    async def buy(ctx, order_code: str = None):
+        if not order_code:
+            return await ctx.send(f"Please provide an order code, like this: **{COMMAND_PREFIX}buy E30A**")
+
+        dealer_car = services.get_car_by_order_code(order_code)
+
+        if not dealer_car:
+            return await ctx.send("That car does not exist!")
+
+        for user_car in ctx.local_user.cars:
+            if user_car.id == dealer_car.id:
+                return await ctx.send("You already own this car!")
+
+        if len(ctx.local_user.cars) >= 4:
+                return await ctx.send("Your garage is already full! (max 4 cars)")
+
+        if ctx.local_user.money < dealer_car.price:
+            return await ctx.send("You do not have enough money to buy this car!")
+
+        services.buy_car(ctx.local_user.id, dealer_car.id)
+        await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
+
+    @bot.command()
+    async def garage(ctx):
+        user_cars = ctx.local_user.cars
+        cars_table_output = t2a(
+            header=["Year", "Make", "Model", "Trim", "Type", "Power"],
+            body=[[car.year, car.make, car.model, car.trim, car.type.value, f"{car.horsepower:,} HP"] for car in user_cars],
+            style=PresetStyle.thin_compact,
+            last_col_heading=True
+        )
+        await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
 
     # /help || Get a list of all commands
     @bot.command()
     async def help(ctx):
         await ctx.send(
-"""
+f"""
 Here's a list of commands you can use:
 ```
-/help - Get a list of commands
-/hello - Say hi!
-/bank - Check your bank account
-/dealer - See all available cars for purchase
-/roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
+{COMMAND_PREFIX}help - Get a list of commands
+{COMMAND_PREFIX}hello - Say hi!
+{COMMAND_PREFIX}bank - Check your bank account
+{COMMAND_PREFIX}dealer - See all available cars for purchase
+{COMMAND_PREFIX}buy <order code> - Buy a car from the dealer
+{COMMAND_PREFIX}garage - See all cars in your garage
+{COMMAND_PREFIX}roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
 ```""")
