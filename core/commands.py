@@ -127,7 +127,7 @@ def handle_commands(bot):
             opponent_car_view.add_item(components.CarButton(car=car, index=index + 1))
 
         initial_message = await ctx.send(
-            f"{user.username}, select a car to race with (${wager:,} race)",
+            f"{user.username}, select a car to race with | ${wager:,} race",
             view=user_car_view,
         )
 
@@ -139,12 +139,12 @@ def handle_commands(bot):
             )
             user_selected_car_id = user_interaction.data["custom_id"]
             await user_interaction.response.edit_message(
-                content=f"{opponent.username}, select a car to race with (${wager:,} race)",
+                content=f"{opponent.username}, select a car to race with | ${wager:,} race",
                 view=opponent_car_view
             )
         except asyncio.TimeoutError:
             return await initial_message.edit(
-                content=f"{user.username} took too long to select a car!",
+                content=f"{user.username} took too long to select a car...",
                 view=None
             )
 
@@ -158,12 +158,12 @@ def handle_commands(bot):
             await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
         except asyncio.TimeoutError:
             return await initial_message.edit(
-                content=f"{opponent.username} took too long to select a car!",
+                content=f"{opponent.username} took too long to select a car...",
                 view=None
             )
 
-        winner = services.race_cars(user, opponent, user_selected_car_id, opponent_selected_car_id)
-        await initial_message.edit(content=f"{winner.username} won the race!")
+        winner = services.race_cars(user, opponent, user_selected_car_id, opponent_selected_car_id, wager)
+        await initial_message.edit(content=f"{winner.username} won the race and ${wager:,}")
 
     # help || Get a list of all commands
     @bot.command()

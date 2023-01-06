@@ -54,7 +54,7 @@ def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     db.close()
     return True
 
-def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, db: Session = next(get_db())):
+def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, wager: int, db: Session = next(get_db())):
     user_car = db.query(Car).filter(Car.id == user_car_id).one_or_none()
     opponent_car = db.query(Car).filter(Car.id == opponent_car_id).one_or_none()
     user = db.query(User).filter(User.id == local_user.id).one_or_none()
@@ -73,6 +73,19 @@ def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, db: Sess
         winner = user
     else:
         winner = opponent
+
+    if wager > 0:
+        if winner == user:
+            user.money += wager
+            opponent.money -= wager
+        else:
+            user.money -= wager
+            opponent.money += wager
+
+    db.commit()
+    db.refresh(user)
+    db.refresh(opponent)
+    db.close()
 
     return winner
 
