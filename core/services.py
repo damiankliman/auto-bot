@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.models import User, Car
 import os
+import random
 
 def get_user_by_id(discord_id: int, db: Session = next(get_db())):
     user = db.query(User).filter(User.discord_id == discord_id).one_or_none()
@@ -51,3 +52,28 @@ def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     user.cars.append(car)
     db.commit()
     return True
+
+def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, db: Session = next(get_db())):
+    user_car = db.query(Car).filter(Car.id == user_car_id).one_or_none()
+    opponent_car = db.query(Car).filter(Car.id == opponent_car_id).one_or_none()
+    user = db.query(User).filter(User.id == local_user.id).one_or_none()
+    opponent = db.query(User).filter(User.id == local_opponent.id).one_or_none()
+
+    variance = int(os.getenv('RACE_VARIANCE')) or 30
+    user_power_weight_ratio = user_car.horsepower / user_car.weight
+    opponent_power_weight_ratio = opponent_car.horsepower / opponent_car.weight
+    user_luck = random.randint(50-variance/2, 50+variance/2)
+    opponent_luck = random.randint(50-variance/2, 50+variance/2)
+
+    user_result = user_power_weight_ratio * user_luck
+    opponent_result = opponent_power_weight_ratio * opponent_luck
+
+    if user_result > opponent_result:
+        winner = user
+    else:
+        winner = opponent
+
+    return winner
+
+
+

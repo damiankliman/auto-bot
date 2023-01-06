@@ -136,7 +136,8 @@ def handle_commands(bot):
         except asyncio.TimeoutError:
             return await initial_message.edit(content=f"{opponent.username} took too long to select a car!", view=None)
 
-        print(user_selected_car_id, opponent_selected_car_id)
+        winner = services.race_cars(user, opponent, user_selected_car_id, opponent_selected_car_id)
+        await initial_message.edit(content=f"{winner.username} won the race!")
 
     # help || Get a list of all commands
     @bot.command()
