@@ -12,12 +12,12 @@ import re
 def handle_commands(bot):
     COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
 
-    # /hello || Greet the user
+    # hello || Greet the user
     @bot.command()
     async def hello(ctx):
         await ctx.send(f"Hi there {ctx.local_user.username}!")
 
-    # /bank || Get the amount of money the user has in their bank account
+    # bank || Get the amount of money the user has in their bank account
     @bot.command()
     async def bank(ctx):
         money = services.get_user_money_by_id(ctx.local_user.id)
@@ -32,7 +32,7 @@ def handle_commands(bot):
         embed.set_footer(text="Please do not retain this for your records")
         await ctx.send(embed=embed)
 
-    # /roll || Roll a random number between 1 and 99 (or a custom number)
+    # roll || Roll a random number between 1 and 99 (or a custom number)
     @bot.command()
     async def roll(ctx, max: int = 99):
         if max < 1:
@@ -40,7 +40,7 @@ def handle_commands(bot):
 
         await ctx.send(str(random.randint(1, max)))
 
-    # /dealer || See all available base cars for purchase
+    # dealer || See all available base cars for purchase
     @bot.command()
     async def dealer(ctx):
         dealer_cars = services.get_all_cars()
@@ -53,7 +53,7 @@ def handle_commands(bot):
         )
         await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
 
-    # /buy || Buy a car from the dealer
+    # buy || Buy a car from the dealer
     @bot.command()
     async def buy(ctx, order_code: str = None):
         if not order_code:
@@ -77,7 +77,7 @@ def handle_commands(bot):
         services.buy_car(ctx.local_user.id, dealer_car.id)
         await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
 
-    # /garage || See all cars in the user's garage
+    # garage || See all cars in the user's garage
     @bot.command()
     async def garage(ctx):
         user_cars = ctx.local_user.cars
@@ -89,7 +89,7 @@ def handle_commands(bot):
         )
         await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
 
-    # /race || Race another user
+    # race || Race another user
     @bot.command()
     async def race(ctx, opponent: str = None):
         if not opponent:
@@ -129,7 +129,7 @@ def handle_commands(bot):
         opponent_selected_car_id = opponent_interaction.data["custom_id"]
         await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
 
-    # /help || Get a list of all commands
+    # help || Get a list of all commands
     @bot.command()
     async def help(ctx):
         await ctx.send(
