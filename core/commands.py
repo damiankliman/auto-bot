@@ -1,10 +1,13 @@
 import os
 import random
 import discord
+from discord.ui import View
 from core import services
 from core.models import CarType, Car
+from core import components
 from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
+import re
 
 def handle_commands(bot):
     COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
@@ -85,6 +88,37 @@ def handle_commands(bot):
             last_col_heading=True
         )
         await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
+
+    # /race || Race another user
+    @bot.command()
+    async def race(ctx, opponent: str = None):
+        if not opponent:
+            return await ctx.send(f"Please @ another user to race with, like this: **{COMMAND_PREFIX}race <@user>**")
+
+        opponent_id = re.sub("[^0-9]", "", opponent)
+        user = ctx.local_user
+        opponent = services.get_user_by_id(opponent_id)
+        user_selected_car_id = None
+        opponent_selected_car_id = None
+
+        user_car_view = View()
+        opponent_car_view = View()
+
+        for index, car in enumerate(user.cars):
+            user_car_view.add_item(components.CarButton(car=car, index=index + 1))
+
+        for index, car in enumerate(opponent.cars):
+            opponent_car_view.add_item(components.CarButton(car=car, index=index + 1))
+
+        await ctx.send(f"{user.username}, select a car to race with:", view=user_car_view)
+
+        user_interaction = await bot.wait_for("interaction", check=lambda interaction: interaction.user.id == ctx.author.id)
+        user_selected_car_id = user_interaction.data["custom_id"]
+        await user_interaction.response.edit_message(content=f"{opponent.username}, select a car to race with:", view=opponent_car_view)
+
+        opponent_interaction = await bot.wait_for("interaction", check=lambda interaction: interaction.user.id == opponent.discord_id)
+        opponent_selected_car_id = opponent_interaction.data["custom_id"]
+        await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
 
     # /help || Get a list of all commands
     @bot.command()
