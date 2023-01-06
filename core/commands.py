@@ -1,20 +1,24 @@
 import os
 import random
 import discord
+from discord.ui import View
 from core import services
 from core.models import CarType, Car
+from core import components
 from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
+import re
+import asyncio
 
 def handle_commands(bot):
     COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
 
-    # /hello || Greet the user
+    # hello || Greet the user
     @bot.command()
     async def hello(ctx):
         await ctx.send(f"Hi there {ctx.local_user.username}!")
 
-    # /bank || Get the amount of money the user has in their bank account
+    # bank || Get the amount of money the user has in their bank account
     @bot.command()
     async def bank(ctx):
         money = services.get_user_money_by_id(ctx.local_user.id)
@@ -29,7 +33,7 @@ def handle_commands(bot):
         embed.set_footer(text="Please do not retain this for your records")
         await ctx.send(embed=embed)
 
-    # /roll || Roll a random number between 1 and 99 (or a custom number)
+    # roll || Roll a random number between 1 and 99 (or a custom number)
     @bot.command()
     async def roll(ctx, max: int = 99):
         if max < 1:
@@ -37,7 +41,7 @@ def handle_commands(bot):
 
         await ctx.send(str(random.randint(1, max)))
 
-    # /dealer || See all available base cars for purchase
+    # dealer || See all available base cars for purchase
     @bot.command()
     async def dealer(ctx):
         dealer_cars = services.get_all_cars()
@@ -50,6 +54,7 @@ def handle_commands(bot):
         )
         await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
 
+    # buy || Buy a car from the dealer
     @bot.command()
     async def buy(ctx, order_code: str = None):
         if not order_code:
@@ -73,6 +78,7 @@ def handle_commands(bot):
         services.buy_car(ctx.local_user.id, dealer_car.id)
         await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
 
+    # garage || See all cars in the user's garage
     @bot.command()
     async def garage(ctx):
         user_cars = ctx.local_user.cars
@@ -84,7 +90,82 @@ def handle_commands(bot):
         )
         await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
 
-    # /help || Get a list of all commands
+    # race || Race another user
+    @bot.command()
+    async def race(ctx, opponent: str = None, wager: int = 0):
+        if not opponent:
+            return await ctx.send(f"Please @ another user to race with, like this: **{COMMAND_PREFIX}race @user**")
+
+        if not opponent.startswith("<@") or not opponent.endswith(">"):
+            return await ctx.send(f"That is not a valid opponent, make sure to tag them like this: **{COMMAND_PREFIX}race @user**")
+
+        opponent_id = re.sub("[^0-9]", "", opponent)
+        user = ctx.local_user
+        opponent = services.get_user_by_id(opponent_id)
+        user_car_view = View()
+        opponent_car_view = View()
+
+        if opponent_id == str(user.discord_id):
+            return await ctx.send("You can't race yourself...")
+
+        if not user.cars:
+            return await ctx.send("You do not have any cars to race with...")
+
+        if not opponent.cars:
+            return await ctx.send("Your opponent does not have any cars to race with...")
+
+        if user.money < wager:
+            return await ctx.send("You do not have enough money for this race...")
+
+        if opponent.money < wager:
+            return await ctx.send("Your opponent does not have enough money for this race...")
+
+        for index, car in enumerate(user.cars):
+            user_car_view.add_item(components.CarButton(car=car, index=index + 1))
+
+        for index, car in enumerate(opponent.cars):
+            opponent_car_view.add_item(components.CarButton(car=car, index=index + 1))
+
+        initial_message = await ctx.send(
+            f"{user.username}, select a car to race with | ${wager:,} race",
+            view=user_car_view,
+        )
+
+        try:
+            user_interaction = await bot.wait_for(
+                "interaction",
+                timeout=30,
+                check=lambda interaction: interaction.user.id == ctx.author.id
+            )
+            user_selected_car_id = user_interaction.data["custom_id"]
+            await user_interaction.response.edit_message(
+                content=f"{opponent.username}, select a car to race with | ${wager:,} race",
+                view=opponent_car_view
+            )
+        except asyncio.TimeoutError:
+            return await initial_message.edit(
+                content=f"{user.username} took too long to select a car...",
+                view=None
+            )
+
+        try:
+            opponent_interaction = await bot.wait_for(
+                "interaction",
+                timeout=30,
+                check=lambda interaction: interaction.user.id == opponent.discord_id
+            )
+            opponent_selected_car_id = opponent_interaction.data["custom_id"]
+            await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
+        except asyncio.TimeoutError:
+            return await initial_message.edit(
+                content=f"{opponent.username} took too long to select a car...",
+                view=None
+            )
+
+        winner = services.race_cars(user, opponent, user_selected_car_id, opponent_selected_car_id, wager)
+        await initial_message.edit(content=f"{winner.username} won the race and ${wager:,}")
+
+    # help || Get a list of all commands
     @bot.command()
     async def help(ctx):
         await ctx.send(
@@ -97,5 +178,6 @@ Here's a list of commands you can use:
 {COMMAND_PREFIX}dealer - See all available cars for purchase
 {COMMAND_PREFIX}buy <order code> - Buy a car from the dealer
 {COMMAND_PREFIX}garage - See all cars in your garage
+{COMMAND_PREFIX}race <@user> <optional wager> - Race another user
 {COMMAND_PREFIX}roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
 ```""")
