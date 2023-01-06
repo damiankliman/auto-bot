@@ -51,6 +51,7 @@ def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     user.money -= car.price
     user.cars.append(car)
     db.commit()
+    db.close()
     return True
 
 def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, db: Session = next(get_db())):

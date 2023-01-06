@@ -92,7 +92,7 @@ def handle_commands(bot):
 
     # race || Race another user
     @bot.command()
-    async def race(ctx, opponent: str = None):
+    async def race(ctx, opponent: str = None, wager: int = 0):
         if not opponent:
             return await ctx.send(f"Please @ another user to race with, like this: **{COMMAND_PREFIX}race @user**")
 
@@ -109,10 +109,16 @@ def handle_commands(bot):
             return await ctx.send("You can't race yourself...")
 
         if not user.cars:
-            return await ctx.send("You do not have any cars to race with!")
+            return await ctx.send("You do not have any cars to race with...")
 
         if not opponent.cars:
-            return await ctx.send("Your opponent does not have any cars to race with!")
+            return await ctx.send("Your opponent does not have any cars to race with...")
+
+        if user.money < wager:
+            return await ctx.send("You do not have enough money for this race...")
+
+        if opponent.money < wager:
+            return await ctx.send("Your opponent does not have enough money for this race...")
 
         for index, car in enumerate(user.cars):
             user_car_view.add_item(components.CarButton(car=car, index=index + 1))
@@ -120,21 +126,41 @@ def handle_commands(bot):
         for index, car in enumerate(opponent.cars):
             opponent_car_view.add_item(components.CarButton(car=car, index=index + 1))
 
-        initial_message = await ctx.send(f"{user.username}, select a car to race with:", view=user_car_view)
+        initial_message = await ctx.send(
+            f"{user.username}, select a car to race with (${wager:,} race)",
+            view=user_car_view,
+        )
 
         try:
-            user_interaction = await bot.wait_for("interaction", timeout=30, check=lambda interaction: interaction.user.id == ctx.author.id)
+            user_interaction = await bot.wait_for(
+                "interaction",
+                timeout=30,
+                check=lambda interaction: interaction.user.id == ctx.author.id
+            )
             user_selected_car_id = user_interaction.data["custom_id"]
-            await user_interaction.response.edit_message(content=f"{opponent.username}, select a car to race with:", view=opponent_car_view)
+            await user_interaction.response.edit_message(
+                content=f"{opponent.username}, select a car to race with (${wager:,} race)",
+                view=opponent_car_view
+            )
         except asyncio.TimeoutError:
-            return await initial_message.edit(content=f"{user.username} took too long to select a car!", view=None)
+            return await initial_message.edit(
+                content=f"{user.username} took too long to select a car!",
+                view=None
+            )
 
         try:
-            opponent_interaction = await bot.wait_for("interaction", timeout=30, check=lambda interaction: interaction.user.id == opponent.discord_id)
+            opponent_interaction = await bot.wait_for(
+                "interaction",
+                timeout=30,
+                check=lambda interaction: interaction.user.id == opponent.discord_id
+            )
             opponent_selected_car_id = opponent_interaction.data["custom_id"]
             await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
         except asyncio.TimeoutError:
-            return await initial_message.edit(content=f"{opponent.username} took too long to select a car!", view=None)
+            return await initial_message.edit(
+                content=f"{opponent.username} took too long to select a car!",
+                view=None
+            )
 
         winner = services.race_cars(user, opponent, user_selected_car_id, opponent_selected_car_id)
         await initial_message.edit(content=f"{winner.username} won the race!")
