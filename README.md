@@ -27,6 +27,7 @@ COMMAND_PREFIX=!
 
 * Start a local database with `docker-compose up -d`
 * Open a pipenv shell with `pipenv shell`
+* If its your first time starting the bot, run 'make db_upgrade' to populate tables
 * Start the bot with `make start` or `make dev` (for dev mode)
 
 ## License
