@@ -93,16 +93,25 @@ def handle_commands(bot):
     @bot.command()
     async def race(ctx, opponent: str = None):
         if not opponent:
-            return await ctx.send(f"Please @ another user to race with, like this: **{COMMAND_PREFIX}race <@user>**")
+            return await ctx.send(f"Please @ another user to race with, like this: **{COMMAND_PREFIX}race @user**")
+
+        if not opponent.startswith("<@") or not opponent.endswith(">"):
+            return await ctx.send(f"That is not a valid opponent, make sure to tag them like this: **{COMMAND_PREFIX}race @user**")
 
         opponent_id = re.sub("[^0-9]", "", opponent)
         user = ctx.local_user
         opponent = services.get_user_by_id(opponent_id)
-        user_selected_car_id = None
-        opponent_selected_car_id = None
-
         user_car_view = View()
         opponent_car_view = View()
+
+        if opponent_id == str(user.discord_id):
+            return await ctx.send("You can't race yourself...")
+
+        if not user.cars:
+            return await ctx.send("You do not have any cars to race with!")
+
+        if not opponent.cars:
+            return await ctx.send("Your opponent does not have any cars to race with!")
 
         for index, car in enumerate(user.cars):
             user_car_view.add_item(components.CarButton(car=car, index=index + 1))
