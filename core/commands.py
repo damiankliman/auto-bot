@@ -8,6 +8,7 @@ from core import components
 from table2ascii import table2ascii as t2a, PresetStyle
 from datetime import datetime
 import re
+import asyncio
 
 def handle_commands(bot):
     COMMAND_PREFIX = os.getenv('COMMAND_PREFIX') or '!'
@@ -119,15 +120,23 @@ def handle_commands(bot):
         for index, car in enumerate(opponent.cars):
             opponent_car_view.add_item(components.CarButton(car=car, index=index + 1))
 
-        await ctx.send(f"{user.username}, select a car to race with:", view=user_car_view)
+        initial_message = await ctx.send(f"{user.username}, select a car to race with:", view=user_car_view)
 
-        user_interaction = await bot.wait_for("interaction", check=lambda interaction: interaction.user.id == ctx.author.id)
-        user_selected_car_id = user_interaction.data["custom_id"]
-        await user_interaction.response.edit_message(content=f"{opponent.username}, select a car to race with:", view=opponent_car_view)
+        try:
+            user_interaction = await bot.wait_for("interaction", timeout=30, check=lambda interaction: interaction.user.id == ctx.author.id)
+            user_selected_car_id = user_interaction.data["custom_id"]
+            await user_interaction.response.edit_message(content=f"{opponent.username}, select a car to race with:", view=opponent_car_view)
+        except asyncio.TimeoutError:
+            return await initial_message.edit(content=f"{user.username} took too long to select a car!", view=None)
 
-        opponent_interaction = await bot.wait_for("interaction", check=lambda interaction: interaction.user.id == opponent.discord_id)
-        opponent_selected_car_id = opponent_interaction.data["custom_id"]
-        await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
+        try:
+            opponent_interaction = await bot.wait_for("interaction", timeout=30, check=lambda interaction: interaction.user.id == opponent.discord_id)
+            opponent_selected_car_id = opponent_interaction.data["custom_id"]
+            await opponent_interaction.response.edit_message(content="Race is starting...", view=None)
+        except asyncio.TimeoutError:
+            return await initial_message.edit(content=f"{opponent.username} took too long to select a car!", view=None)
+
+        print(user_selected_car_id, opponent_selected_car_id)
 
     # help || Get a list of all commands
     @bot.command()
