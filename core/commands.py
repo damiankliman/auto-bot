@@ -50,6 +50,7 @@ def handle_commands(bot):
         )
         await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
 
+    # /buy || Buy a car from the dealer
     @bot.command()
     async def buy(ctx, order_code: str = None):
         if not order_code:
@@ -73,6 +74,7 @@ def handle_commands(bot):
         services.buy_car(ctx.local_user.id, dealer_car.id)
         await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
 
+    # /garage || See all cars in the user's garage
     @bot.command()
     async def garage(ctx):
         user_cars = ctx.local_user.cars
