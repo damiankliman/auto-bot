@@ -178,5 +178,6 @@ Here's a list of commands you can use:
 {COMMAND_PREFIX}dealer - See all available cars for purchase
 {COMMAND_PREFIX}buy <order code> - Buy a car from the dealer
 {COMMAND_PREFIX}garage - See all cars in your garage
+{COMMAND_PREFIX}race <@user> <optional wager> - Race another user
 {COMMAND_PREFIX}roll <optional number> - Roll a random number between 1 and 99 (or a custom number)
 ```""")
