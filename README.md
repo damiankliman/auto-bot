@@ -21,6 +21,7 @@ DISCORD_BOT_TOKEN=
 DATABASE_URL=postgresql://py_bot:postgres@localhost:5432/py_bot
 DEFAULT_USER_MONEY=5000
 COMMAND_PREFIX=!
+RACE_VARIANCE=30
 ```
 
 ### Executing program
