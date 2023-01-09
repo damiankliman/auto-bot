@@ -56,9 +56,9 @@ def handle_commands(bot):
 
     # buy || Buy a car from the dealer
     @bot.command()
-    async def buy(ctx, order_code: str = None):
+    async def buy(ctx, type: str = None, order_code: str = None):
         if not order_code:
-            return await ctx.send(f"Please provide an order code, like this: **{COMMAND_PREFIX}buy E30A**")
+            return await ctx.send(f"Please provide an order code, like this: **{COMMAND_PREFIX}buy car E30A**")
 
         dealer_car = services.get_car_by_order_code(order_code)
 
@@ -89,6 +89,19 @@ def handle_commands(bot):
             last_col_heading=True
         )
         await ctx.send(f"Here's your garage: \n```{cars_table_output}```")
+
+    # mods || See all available mods for purchase
+    @bot.command()
+    async def mods(ctx):
+        available_mods = services.get_all_mods()
+        available_mods.sort(key=lambda mod: mod.price)
+        cars_table_output = t2a(
+            header=["Mod", "Power", "Price", "Order code"],
+            body=[[mod.name, f"+{mod.power_add:,} HP", f"${mod.price:,}", mod.order_code] for mod in available_mods],
+            style=PresetStyle.thin_compact,
+            last_col_heading=True
+        )
+        await ctx.send(f"```Here's a list of mods you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy mod <order code> command to buy a mod```")
 
     # race || Race another user
     @bot.command()

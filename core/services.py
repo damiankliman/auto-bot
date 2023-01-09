@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from core.database import get_db
-from core.models import User, Car
+from core.models import User, Car, Mod
 import os
 import random
 
@@ -39,6 +39,11 @@ def get_all_cars(db: Session = next(get_db())):
     cars = db.query(Car).all()
     db.close()
     return cars
+
+def get_all_mods(db: Session = next(get_db())):
+    mods = db.query(Mod).all()
+    db.close()
+    return mods
 
 def get_car_by_order_code(order_code: str, db: Session = next(get_db())):
     car = db.query(Car).filter(Car.order_code == order_code).one_or_none()
