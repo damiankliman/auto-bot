@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, BigInteger, Integer, Enum, ForeignKey
+from sqlalchemy import Column, String, BigInteger, Integer, Enum, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -43,6 +43,7 @@ class Car(Base):
     weight = Column(Integer, nullable=False)
     price = Column(Integer, nullable=False)
     order_code = Column(String, unique=True, nullable=False)
+    factory_induction = Column(Boolean, nullable=True)
     users = relationship('User', secondary='user_car', back_populates='cars')
 
 class UserCar(Base):
