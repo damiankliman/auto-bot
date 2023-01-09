@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from core.database import get_db
-from core.models import User, Car, Mod
+from core.models import User, Car, Mod, UserCar
 import os
 import random
 
@@ -35,6 +35,11 @@ def get_user_money_by_id(user_id, db: Session = next(get_db())):
     db.close()
     return user.money
 
+def get_user_car_by_id(user_id, user_car_id, db: Session = next(get_db())):
+    user_car = db.query(UserCar).filter(UserCar.car_id == user_car_id, UserCar.user_id == user_id).one_or_none()
+    db.close()
+    return user_car
+
 def get_all_cars(db: Session = next(get_db())):
     cars = db.query(Car).all()
     db.close()
@@ -50,6 +55,11 @@ def get_car_by_order_code(order_code: str, db: Session = next(get_db())):
     db.close()
     return car
 
+def get_mod_by_order_code(order_code: str, db: Session = next(get_db())):
+    mod = db.query(Mod).filter(Mod.order_code == order_code).one_or_none()
+    db.close()
+    return mod
+
 def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     user = db.query(User).filter(User.id == user_id).one_or_none()
     car = db.query(Car).filter(Car.id == car_id).one_or_none()
@@ -58,6 +68,16 @@ def buy_car(user_id: str, car_id: str, db: Session = next(get_db())):
     db.commit()
     db.close()
     return True
+
+def buy_mod(user_id: str, car_id: str, mod_id: str, db: Session = next(get_db())):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+    user_car = db.query(UserCar).filter(UserCar.id == car_id).one_or_none()
+    mod = db.query(Mod).filter(Mod.id == mod_id).one_or_none()
+    user.money -= mod.price
+    user_car.mods.append(mod)
+    db.commit()
+    db.close()
+    return user_car
 
 def race_cars(local_user, local_opponent, user_car_id, opponent_car_id, wager: int, db: Session = next(get_db())):
     user_car = db.query(Car).filter(Car.id == user_car_id).one_or_none()

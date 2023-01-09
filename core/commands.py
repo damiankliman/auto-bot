@@ -52,31 +52,88 @@ def handle_commands(bot):
             style=PresetStyle.thin_compact,
             last_col_heading=True
         )
-        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy <order code> command to buy a car```")
+        await ctx.send(f"```Here's a list of cars you can buy \n{cars_table_output} \nUse the {COMMAND_PREFIX}buy car <order code> command to buy a car```")
 
     # buy || Buy a car from the dealer
     @bot.command()
     async def buy(ctx, type: str = None, order_code: str = None):
+        if not type:
+            return await ctx.send(f"Please provide a type, like this: **{COMMAND_PREFIX}buy mod EX1**")
         if not order_code:
             return await ctx.send(f"Please provide an order code, like this: **{COMMAND_PREFIX}buy car E30A**")
 
-        dealer_car = services.get_car_by_order_code(order_code)
+        if type == "car":
+            dealer_car = services.get_car_by_order_code(order_code)
 
-        if not dealer_car:
-            return await ctx.send("That car does not exist!")
+            if not dealer_car:
+                return await ctx.send("That car does not exist!")
 
-        for user_car in ctx.local_user.cars:
-            if user_car.id == dealer_car.id:
-                return await ctx.send("You already own this car!")
+            for user_car in ctx.local_user.cars:
+                if user_car.id == dealer_car.id:
+                    return await ctx.send("You already own this car!")
 
-        if len(ctx.local_user.cars) >= 4:
-                return await ctx.send("Your garage is already full! (max 4 cars)")
+            if len(ctx.local_user.cars) >= 4:
+                    return await ctx.send("Your garage is already full! (max 4 cars)")
 
-        if ctx.local_user.money < dealer_car.price:
-            return await ctx.send("You do not have enough money to buy this car!")
+            if ctx.local_user.money < dealer_car.price:
+                return await ctx.send("You do not have enough money to buy this car!")
 
-        services.buy_car(ctx.local_user.id, dealer_car.id)
-        await ctx.send(f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!")
+            services.buy_car(ctx.local_user.id, dealer_car.id)
+            await ctx.send(
+                f"You bought a {dealer_car.year} {dealer_car.make} {dealer_car.model} {dealer_car.trim} for ${dealer_car.price:,}!"
+            )
+
+        elif type == "mod":
+            mod = services.get_mod_by_order_code(order_code)
+            user = ctx.local_user
+            user_car_view = View()
+
+            if not mod:
+                return await ctx.send("That mod does not exist!")
+
+            if ctx.local_user.money < mod.price:
+                return await ctx.send("You do not have enough money to buy this mod!")
+
+            for index, car in enumerate(user.cars):
+                user_car_view.add_item(components.CarButton(car=car, index=index + 1))
+
+            initial_message = await ctx.send(
+                f"{user.username}, select the car you want to mod",
+                view=user_car_view,
+            )
+
+            try:
+                user_interaction = await bot.wait_for(
+                    "interaction",
+                    timeout=30,
+                    check=lambda interaction: interaction.user.id == ctx.author.id
+                )
+                user_selected_car = services.get_user_car_by_id(user.id, user_interaction.data["custom_id"])
+                for user_car_mod in user_selected_car.mods:
+                    if user_car_mod.id == mod.id:
+                        return await initial_message.edit(
+                            content=f"You already have this mod on your car...",
+                            view=None
+                        )
+                    if user_car_mod.type == mod.type:
+                        return await initial_message.edit(
+                            content=f"You already have a {mod.type.value} mod on your car...",
+                        )
+
+                await user_interaction.response.edit_message(
+                    content=f"Modding your car...",
+                    view=None
+                )
+            except asyncio.TimeoutError:
+                return await initial_message.edit(
+                    content=f"{user.username} took too long to select a car...",
+                    view=None
+                )
+
+            services.buy_mod(ctx.local_user.id, user_selected_car.id, mod.id)
+            await initial_message.edit(
+                content = f"You bought a {mod.name} for ${mod.price:,}!"
+            )
 
     # garage || See all cars in the user's garage
     @bot.command()
