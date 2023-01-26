@@ -2,6 +2,8 @@
 
 A simple discord bot based game that resembles a local car scene
 
+[Add the current production bot to your server](https://discord.com/api/oauth2/authorize?client_id=1059807062592344114&permissions=534723950656&scope=bot)
+
 ## Getting Started
 
 ### Dependencies
